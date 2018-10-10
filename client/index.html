@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/style.css">
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+  <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        
+        <div class="topnav">
+                <a class="active" href="#home">LiveCodeSimulator</a>
+                <div class="login-container">
+                    <input type="text" placeholder="Email" name="username" v-model="email" v-if=!token>
+                    <input type="password" placeholder="Password" name="psw" v-model="password" v-if=!token>
+                    <button v-if=!token type="submit" @click="login">Login</button> 
+                    <button v-if=token type="submit" @click="logout">Logout</button> 
+                </div>
+        </div>
+        <div class="alert alert-danger" role="alert" v-if=isSame>
+                <strong>Email</strong> dan password tidak cocok!
+        </div>
+
+        <label for="quotes" style="margin-left:20px">Quotes</label>
+        <div>
+                <textarea class="form-" id="quotesSubmitter" rows="5" style="margin-left:20px;min-width:500"></textarea>
+        </div>
+        <button class="btn-success" style="margin-left:20px" @click="addQuotes">Submit</button>
+
+
+
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        let app = new Vue({
+            el:'#app',
+            data: {
+                name: '',
+                email: '',
+                password: '',
+                isLogin: false,
+                success: false,
+                isSame:false,
+                error: false,
+                successMsg: '',
+                errorMsg: '',
+                token:'',
+                quotesContent:[]    
+            },
+            methods: {
+                login() {
+                    axios.post('http://localhost:3000/user/login', {
+                        email: app.email,
+                        password: app.password
+                    })
+                    .then(result=>{
+                        app.isSame=false
+                        app.token=result.data
+                        localStorage.setItem('token',result.data)
+                    })
+                    .catch(err=>{
+                        app.isSame=true
+                        console.log(err)
+                    })
+                },
+                logout(){
+                    localStorage.removeItem('token')
+                    app.token=''
+                },
+                addQuotes(){
+                    axios.post('http://localhost:3000/quotes', {
+                        description: app.description
+                    })
+                    .then(result=>{
+                        this.getQuotes()
+                    })
+                    .catch(err=>{
+                        app.isSame=true
+                        console.log(err)
+                    })
+                },
+                getQuotes(){
+                    axios.get('http://localhost:3000/quotes')
+                    .then(result=>{
+                        app.quotesContent=result
+                        console.log(app.quotesContent)
+                    })
+                    .catch(err=>{
+                        console.log(err)
+                    })
+                }
+            },
+            created() {
+                this.token=localStorage.getItem('token')   
+            },
+            watch(){
+
+            }
+            // computed:{
+            //     token:function(){
+            //         return this.token
+            //     }
+            // }
+        })
+    </script>
+</body>
+</html>
